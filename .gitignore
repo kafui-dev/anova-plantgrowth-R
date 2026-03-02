@@ -1,0 +1,5 @@
+# Specific exclusions for files that should not be tracked
+.idea/
+.RData
+.Rhistory
+*.iml
