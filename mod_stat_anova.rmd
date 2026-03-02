@@ -1,0 +1,102 @@
+---
+title: "ANOVA"
+output: html_notebook
+---
+
+# Analyse anova
+
+```{r}
+# Chargement des packages à utiliser
+library(dplyr)
+library(ggplot2)
+```
+
+## Analyse Descriptive
+
+Base de données sélectionnée: `PlantGrowth`
+
+```{r}
+# Chargement des données
+data(PlantGrowth)
+```
+
+Exploration
+
+```{r}
+head(PlantGrowth)
+
+```
+
+Structure du dataset
+
+```{r}
+str(PlantGrowth)
+```
+
+Données statistiques
+
+```{r}
+summary(PlantGrowth)
+```
+
+```{r}
+p <- ggplot(data = PlantGrowth)
+p + geom_boxplot(aes(x=group, y=weight, fill=group), alpha = 0.7) +
+  scale_fill_manual(values = c("ctrl" = "#69b3a2", 
+                                "trt1" = "#ff9f4b", 
+                                "trt2" = "#ed7d7d")) +
+  geom_jitter(aes(x=group, y=weight)) +
+  ggtitle("Weight of plants per group") 
+
+ggsave("boxplot.png")
+```
+
+## Modélisation statistique
+
+Modélisation par ANOVA
+
+```{r}
+anova <- aov(weight~group, data=PlantGrowth)
+summary(anova)
+```
+
+### Interprétation du résultat
+
+On remarque que le coefficient du modèle est significatif.
+
+## Validation du modèle
+
+1.  Normalité des résidus
+
+    ```{r}
+    r = residuals(anova)
+    shapiro.test(r)
+    ```
+
+    On remarque que $p-value \gt 5\%$ , alors on ne peut pas rejeter l'hypothèse de normalité des résidus.
+
+2.  Homogénéité des variances
+
+    ```{r}
+    bartlett.test(weight~group, data=PlantGrowth)
+    ```
+
+    On remarque que $p-value \gt 5\%$ , alors on ne peut pas rejeter l'hypothèse d'homogénéité des résidus.
+
+### Comparaison multiple de Tukey
+
+```{r}
+tkr <- TukeyHSD(anova)
+tkr
+```
+
+On remarque que seule la différence de moyennes entre \`trt2-trt1\` est significative (p_adj $\gt$ 5%).
+
+## Régression Linéaire 
+
+```{r}
+rl <- lm(weight~group, data=PlantGrowth)
+summary(rl)
+```
+
+On remarque que la constante du modèle est très significative, contrairement aux autres coefficients.
